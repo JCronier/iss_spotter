@@ -1,3 +1,5 @@
+// iss.js
+
 const request = require("request");
 
 const fetchMyIP = function(callback) {
@@ -10,9 +12,7 @@ const fetchMyIP = function(callback) {
       return;
     }
 
-    const ip = JSON.parse(body).ip;
-    callback(null, ip);
-    return;
+    callback(null, JSON.parse(body).ip);
   });
 };
 
@@ -28,7 +28,6 @@ const fetchCoordsByIp = function(ip, callback) {
 
     const { latitude, longitude } = JSON.parse(body);
     callback(null, { latitude, longitude });
-    return;
   });
 };
 
@@ -43,12 +42,28 @@ const fetchISSFlyOverTimes = function(coords, callback) {
     }
 
     callback(null, JSON.parse(body).response);
-    return;
+  });
+};
+
+const nextISSTimesForMyLocation = function(callback) {
+  fetchMyIP((error, ip) => {
+    if (error) return callback(error, null);
+
+    fetchCoordsByIp(ip, (error, coords) => {
+      if (error) return callback(error, null);
+
+      fetchISSFlyOverTimes(coords, (error, data) => {
+        if (error) return callback(error, null);
+
+        callback(null, data);
+      });
+    });
   });
 };
 
 module.exports = {
   fetchMyIP,
   fetchCoordsByIp,
-  fetchISSFlyOverTimes
+  fetchISSFlyOverTimes,
+  nextISSTimesForMyLocation
 };
